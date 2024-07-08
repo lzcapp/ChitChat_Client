@@ -20,7 +20,9 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
-                <ListBox x:Name="listbox" d:ItemsSource="{d:SampleData ItemCount=5}"/>
+                <ListBox x:Name="listbox">
+                    <ListBoxItem Content="All" Tag="all"/>
+                </ListBox>
                 <Button x:Name="btnReconnect" Grid.Row="2" Content="Reconnect" IsEnabled="False" Click="BtnReconnect_Click" />
             </Grid>
         </Border>

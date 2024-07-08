@@ -1,9 +1,20 @@
-﻿using System.Windows;
+﻿using System.Collections;
+using System.Diagnostics;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 
 namespace ChitChat_Client_WPF {
+    public class KeyValuePair {
+        public string Key { get; set; }
+
+        public string Value { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -47,13 +58,13 @@ namespace ChitChat_Client_WPF {
                 await _connection.StartAsync();
             };
 
-            _connection.On<string, string>("UserJoined", (connectionID, user) => {
+            _connection.On<string, string>("UserJoined", (connectionId, user) => {
                 Dispatcher.Invoke(() => {
                     DateTime currentDate = DateTime.Now;
                     var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
                     var newMessage = $"[{formattedDate}] [{user}] joined the server.";
                     lstMessage.Items.Add(newMessage);// Add items to the ComboBox
-                    listbox.Items.Add(new ComboBoxItem { Content = user, Tag = connectionID });
+                    listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
                 });
             });
 
@@ -71,6 +82,23 @@ namespace ChitChat_Client_WPF {
                 });
             });
 
+
+            _connection.On<ArrayList>("UserList", (clients) => {
+                Dispatcher.Invoke(() => {
+                    listbox.Items.Clear();
+                    listbox.Items.Add(new ListBoxItem { Content = "All", Tag = "all" });
+                    for (int index = 0; index < clients.Count; index++) {
+                        var str = clients[index].ToString();
+                        KeyValuePair client = JsonConvert.DeserializeObject<KeyValuePair>(str);
+                        var user = client.Value;
+                        var connectionId = client.Key;
+                        listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
+                        break;
+                    }
+                });
+            });
+
+
             _connection.On<string, string>("ReceiveMessage", (user, message) => {
                 Dispatcher.Invoke(() => {
                     DateTime currentDate = DateTime.Now;
@@ -85,8 +113,7 @@ namespace ChitChat_Client_WPF {
                 MessageBox.Show("Connection started.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
                 btnSend.IsEnabled = true;
                 btnReconnect.IsEnabled = true;
-                listbox.Items.Add(new ComboBoxItem { Content = "All", Tag = "all" });
-                listbox.SelectedValue = "All";
+                listbox.SelectedIndex = 0;
             } catch (Exception ex) {
                 lstMessage.Items.Add(ex.Message);
             }
@@ -117,7 +144,8 @@ namespace ChitChat_Client_WPF {
         }
 
         private void BtnReconnect_Click(object sender, RoutedEventArgs e) {
-
+            Process.Start(Environment.ProcessPath);
+            Application.Current.Shutdown();
         }
     }
 }
