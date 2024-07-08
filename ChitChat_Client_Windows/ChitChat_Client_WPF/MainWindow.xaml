@@ -1,0 +1,53 @@
+﻿<Window x:Class="ChitChat_Client_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" Icon="/speech-balloon_1f4ac.png">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Left side content -->
+        <Border Grid.Column="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+                <ListBox x:Name="listbox" d:ItemsSource="{d:SampleData ItemCount=5}"/>
+                <Button x:Name="btnReconnect" Grid.Row="2" Content="Reconnect" IsEnabled="False" Click="BtnReconnect_Click" />
+            </Grid>
+        </Border>
+
+        <!-- GridSplitter -->
+        <GridSplitter Grid.Column="1" Width="5" Background="LightGray" ResizeBehavior="PreviousAndNext"
+                      ResizeDirection="Columns" />
+
+        <!-- Right side content -->
+        <Border Grid.Column="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="40" />
+                </Grid.RowDefinitions>
+
+                <ListBox x:Name="lstMessage" Grid.Row="0" />
+
+                <GridSplitter Grid.Row="1" Width="5" Background="LightGray" ResizeBehavior="PreviousAndNext"
+                              ResizeDirection="Columns" />
+
+                <TextBox x:Name="txtMessage" Grid.Row="2" KeyDown="TxtMessage_KeyDown" />
+
+                <Button x:Name="btnSend" Grid.Row="3" Click="BtnSend_Click" Content="Send" IsEnabled="False" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
