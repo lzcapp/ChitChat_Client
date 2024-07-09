@@ -1,7 +1,5 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using System.Text.Json.Nodes;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,10 +7,10 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 
 namespace ChitChat_Client_WPF {
-    public class KeyValuePair {
-        public string Key { get; set; }
+    public class KeyValuePair(string key, string value) {
+        public string Key { get; } = key;
 
-        public string Value { get; set; }
+        public string Value { get; } = value;
     }
 
     /// <summary>
@@ -87,11 +85,10 @@ namespace ChitChat_Client_WPF {
                 Dispatcher.Invoke(() => {
                     listbox.Items.Clear();
                     listbox.Items.Add(new ListBoxItem { Content = "All", Tag = "all" });
-                    for (int index = 0; index < clients.Count; index++) {
-                        var str = clients[index].ToString();
-                        KeyValuePair client = JsonConvert.DeserializeObject<KeyValuePair>(str);
-                        var user = client.Value;
-                        var connectionId = client.Key;
+                    foreach (var client in clients) {
+                        var clientPair = JsonConvert.DeserializeObject<KeyValuePair>(client.ToString() ?? string.Empty);
+                        var user = clientPair?.Value;
+                        var connectionId = clientPair?.Key;
                         listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
                         break;
                     }
@@ -144,8 +141,10 @@ namespace ChitChat_Client_WPF {
         }
 
         private void BtnReconnect_Click(object sender, RoutedEventArgs e) {
-            Process.Start(Environment.ProcessPath);
-            Application.Current.Shutdown();
+            if (Environment.ProcessPath != null) {
+                Process.Start(Environment.ProcessPath);
+                Application.Current.Shutdown();
+            }
         }
     }
 }
