@@ -14,18 +14,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://google.bintray.com/flexbox-layout'
-        }
-        google()
-        mavenCentral()
         google()
         jcenter()
         mavenCentral()
-        mavenLocal()
         maven { url "https://jitpack.io" }
         maven { url "https://maven.google.com" }
         maven { url "https://google.bintray.com/flexbox-layout" }

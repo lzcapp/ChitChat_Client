@@ -17,7 +17,7 @@ namespace ChitChat_Client_WPF {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow {
-        private HubConnection _connection;
+        private HubConnection _connection = null!;
 
         private string url;
         private string username;
@@ -29,90 +29,95 @@ namespace ChitChat_Client_WPF {
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e) {
-            var loginWindow = new LoginWindow {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
-            };
             try {
-                do {
-                    if (loginWindow.ShowDialog() == true) {
-                        url = loginWindow.Url;
-                        username = loginWindow.Username;
-                    } else {
-                        Environment.Exit(-1);
-                    }
-                } while (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(username));
-            } catch (Exception) {
-                return;
-            }
-
-            if (url.EndsWith("/") && !url.EndsWith("/chitchat")) {
-                url += "chitchat";
-            }
-
-            _connection = new HubConnectionBuilder().WithUrl($"{url}?username={username}").Build();
-
-            _connection.Closed += async (_) => {
-                await Task.Delay(new Random().Next(0, 5) * 1000);
-                await _connection.StartAsync();
-            };
-
-            _connection.On<string, string>("UserJoined", (connectionId, user) => {
-                Dispatcher.Invoke(() => {
-                    DateTime currentDate = DateTime.Now;
-                    var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
-                    var newMessage = $"[{formattedDate}] [{user}] joined the server.";
-                    lstMessage.Items.Add(newMessage);// Add items to the ComboBox
-                    listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
-                });
-            });
-
-            _connection.On<string, string>("UserLeft", (connectionID, user) => {
-                Dispatcher.Invoke(() => {
-                    DateTime currentDate = DateTime.Now;
-                    var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
-                    var newMessage = $"[{formattedDate}] [{user}] left the server.";
-                    lstMessage.Items.Add(newMessage);
-                    foreach (ListBoxItem userItem in listbox.Items) {
-                        if (userItem.Tag.ToString() == connectionID) {
-                            listbox.Items.Remove(userItem);
+                var loginWindow = new LoginWindow {
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen
+                };
+                try {
+                    do {
+                        if (loginWindow.ShowDialog() == true) {
+                            url = loginWindow.Url;
+                            username = loginWindow.Username;
+                        } else {
+                            Environment.Exit(-1);
                         }
-                    }
-                });
-            });
+                    } while (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(username));
+                } catch (Exception) {
+                    return;
+                }
 
+                if (url.EndsWith("/") && !url.EndsWith("/chitchat")) {
+                    url += "chitchat";
+                }
 
-            _connection.On<ArrayList>("UserList", (clients) => {
-                Dispatcher.Invoke(() => {
-                    listbox.Items.Clear();
-                    listbox.Items.Add(new ListBoxItem { Content = "All", Tag = "all" });
-                    foreach (var client in clients) {
-                        var clientPair = JsonConvert.DeserializeObject<KeyValuePair>(client.ToString() ?? string.Empty);
-                        var user = clientPair?.Value;
-                        var connectionId = clientPair?.Key;
+                _connection = new HubConnectionBuilder().WithUrl($"{url}?username={username}").Build();
+
+                _connection.Closed += async (_) => {
+                    await Task.Delay(new Random().Next(0, 5) * 1000);
+                    await _connection.StartAsync();
+                };
+
+                _connection.On<string, string>("UserJoined", (connectionId, user) => {
+                    Dispatcher.Invoke(() => {
+                        var currentDate = DateTime.Now;
+                        var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
+                        var newMessage = $"[{formattedDate}] [{user}] joined the server.";
+                        lstMessage.Items.Add(newMessage);// Add items to the ComboBox
                         listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
-                        break;
-                    }
+                    });
                 });
-            });
 
-
-            _connection.On<string, string>("ReceiveMessage", (user, message) => {
-                Dispatcher.Invoke(() => {
-                    DateTime currentDate = DateTime.Now;
-                    var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
-                    var newMessage = user.Equals(username) ? $"[{formattedDate}] you: {message}" : $"[{formattedDate}] {user}: {message}";
-                    lstMessage.Items.Add(newMessage);
+                _connection.On<string, string>("UserLeft", (connectionID, user) => {
+                    Dispatcher.Invoke(() => {
+                        DateTime currentDate = DateTime.Now;
+                        var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
+                        var newMessage = $"[{formattedDate}] [{user}] left the server.";
+                        lstMessage.Items.Add(newMessage);
+                        foreach (ListBoxItem userItem in listbox.Items) {
+                            if (userItem.Tag.ToString() == connectionID) {
+                                listbox.Items.Remove(userItem);
+                            }
+                        }
+                    });
                 });
-            });
 
-            try {
-                await _connection.StartAsync();
-                MessageBox.Show("Connection started.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
-                btnSend.IsEnabled = true;
-                btnReconnect.IsEnabled = true;
-                listbox.SelectedIndex = 0;
-            } catch (Exception ex) {
-                lstMessage.Items.Add(ex.Message);
+
+                _connection.On<ArrayList>("UserList", (clients) => {
+                    Dispatcher.Invoke(() => {
+                        listbox.Items.Clear();
+                        listbox.Items.Add(new ListBoxItem { Content = "All", Tag = "all" });
+                        foreach (var client in clients) {
+                            var clientPair = JsonConvert.DeserializeObject<KeyValuePair>(client.ToString() ?? string.Empty);
+                            var user = clientPair?.Value;
+                            var connectionId = clientPair?.Key;
+                            listbox.Items.Add(new ListBoxItem { Content = user, Tag = connectionId });
+                            break;
+                        }
+                    });
+                });
+
+
+                _connection.On<string, string>("ReceiveMessage", (user, message) => {
+                    Dispatcher.Invoke(() => {
+                        DateTime currentDate = DateTime.Now;
+                        var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
+                        var newMessage = user.Equals(username) ? $"[{formattedDate}] you: {message}" : $"[{formattedDate}] {user}: {message}";
+                        lstMessage.Items.Add(newMessage);
+                    });
+                });
+
+                try {
+                    await _connection.StartAsync();
+                    MessageBox.Show("Connection started.", "Success!", MessageBoxButton.OK, MessageBoxImage.Information);
+                    btnSend.IsEnabled = true;
+                    btnReconnect.IsEnabled = true;
+                    listbox.SelectedIndex = 0;
+                } catch (Exception ex) {
+                    lstMessage.Items.Add(ex.Message);
+                }
+            }
+            catch (Exception) {
+                //
             }
         }
 

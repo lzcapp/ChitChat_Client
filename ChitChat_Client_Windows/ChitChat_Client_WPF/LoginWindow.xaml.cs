@@ -13,12 +13,8 @@ namespace ChitChat_Client_WPF {
             DialogResult = true;
         }
 
-        public string Url {
-            get => TxtUrl.Text;
-        }
+        public string Url => TxtUrl.Text;
 
-        public string Username {
-            get => TxtUsername.Text;
-        }
+        public string Username => TxtUsername.Text;
     }
 }
