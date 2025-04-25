@@ -10,4 +10,8 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="user_name">Username</string>
+    <string name="server_url">Server URL</string>
+    <string name="ok">OK</string>
+    <string name="error">Error</string>
+    <string name="connect_failed">Connect failed</string>
 </resources>

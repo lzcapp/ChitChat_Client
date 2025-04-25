@@ -1,0 +1,6 @@
+<!-- res/values/arrays.xml -->
+<resources>
+    <string-array name="server_url_suggestions">
+        <item>https://chitchat.seeleo.com/chitchat</item>
+    </string-array>
+</resources>

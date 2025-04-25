@@ -99,7 +99,7 @@ namespace ChitChat_Client_WPF {
 
                 _connection.On<string, string>("ReceiveMessage", (user, message) => {
                     Dispatcher.Invoke(() => {
-                        DateTime currentDate = DateTime.Now;
+                        var currentDate = DateTime.Now;
                         var formattedDate = currentDate.ToString("yyyy-MM-dd HH:mm:ss");
                         var newMessage = user.Equals(username) ? $"[{formattedDate}] you: {message}" : $"[{formattedDate}] {user}: {message}";
                         lstMessage.Items.Add(newMessage);
@@ -123,16 +123,18 @@ namespace ChitChat_Client_WPF {
 
         private async void BtnSend_Click(object sender, RoutedEventArgs e) {
             try {
+                var messageText = txtMessage.Text;
                 if (listbox.SelectedItem != null) {
                     var selectedUser = ((ListBoxItem)listbox.SelectedItem).Tag.ToString();
                     if (selectedUser == "all") {
-                        await _connection.InvokeAsync("SendMessage", username, txtMessage.Text);
+                        await _connection.InvokeAsync("SendMessage", username, messageText);
                     } else {
-                        await _connection.InvokeAsync("SendPrivateMessage", selectedUser, username, txtMessage.Text);
+                        await _connection.InvokeAsync("SendPrivateMessage", selectedUser, username, messageText);
                     }
                 } else {
-                    await _connection.InvokeAsync("SendMessage", username, txtMessage.Text);
+                    await _connection.InvokeAsync("SendMessage", username, messageText);
                 }
+                //lstMessage.Items.Add(messageText);
                 txtMessage.Text = "";
             } catch (Exception ex) {
                 lstMessage.Items.Add(ex.Message);
